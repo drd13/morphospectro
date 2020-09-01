@@ -6,6 +6,6 @@ Contributors:
 
 * Damien de Mijolla
 
-* José Luis
+* José Luis Tous
 
 * Add your names
