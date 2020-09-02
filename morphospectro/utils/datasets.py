@@ -1,4 +1,5 @@
-import torch torchvision
+import torch 
+import torchvision
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 
@@ -19,6 +20,10 @@ class GalaxyDataset(Dataset):
         self.spectra_file = spectra_file
         self.image_folder = image_folder
         self.flux,self.obj_ids = self.load_spectra(self.spectra_file)
+        self.transform = transforms.Compose([
+            torchvision.transforms.ToPILImage(),
+            transforms.ToTensor()]
+        )
 
         
     def load_spectra(self,spectra_file):
@@ -34,12 +39,12 @@ class GalaxyDataset(Dataset):
         skimage.io.imsave(savepath,img)
 
     def get_spectra(self,idx):
-        return torch.FloatTensor(flux.loc[idx].values)
+        return torch.FloatTensor(self.flux.loc[idx].values)
     
     def get_params(self,idx):
-        ra = obj_ids.loc[idx]["ra"]
-        dec = obj_ids.loc[idx]["dec"]
-        dr8objid = int(obj_ids.loc[idx]["dr8objid"])
+        ra = self.obj_ids.loc[idx]["ra"]
+        dec = self.obj_ids.loc[idx]["dec"]
+        dr8objid = int(self.obj_ids.loc[idx]["dr8objid"])
         return ra,dec,dr8objid
    
     def get_image(self,idx):
@@ -54,11 +59,12 @@ class GalaxyDataset(Dataset):
             return self.download_cutout(ra,dec,image_path)
    
     def __len__(self):
-        return len(fluxes)
+        return len(self.flux)
     
     
     def __getitem__(self,idx):
         spectra = self.get_spectra(idx)
         image = self.get_image(idx)
+        image = self.transform(image)
 
         return spectra,image,idx
