@@ -8,7 +8,7 @@ import skimage.io
 import pandas as pd
 
 class GalaxyDataset(Dataset):
-    def __init__(self,spectra_file,image_folder):
+    def __init__(self,spectra_file,image_folder,debug = False):
         """
         A pytorch dataset class used for training a neural network. Will automatically generate cutout photometry images based on ra,dec.
         spectra_file: str
@@ -24,6 +24,7 @@ class GalaxyDataset(Dataset):
             torchvision.transforms.ToPILImage(),
             transforms.ToTensor()]
         )
+        self.debug = debug
 
         
     def load_spectra(self,spectra_file):
@@ -35,8 +36,11 @@ class GalaxyDataset(Dataset):
     def download_cutout(self,ra,dec,savepath,pixscale=0.3):
         """downloads a cutout image."""
         url = f"https://www.legacysurvey.org/viewer/cutout.jpg?ra={ra}&dec={dec}&layer=sdss&pixscale={pixscale}"
+        if self.debug is True:
+            print(f"url is {url}")
         img = skimage.io.imread(url)
         skimage.io.imsave(savepath,img)
+        return img
 
     def get_spectra(self,idx):
         return torch.FloatTensor(self.flux.loc[idx].values)
